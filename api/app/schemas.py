@@ -26,6 +26,10 @@ class Passage(BaseModel):
     section: str
     page: int | None = None
     score: float = Field(description="Similarity, higher is closer (1 - cosine distance).")
+    # Added by the real retriever; defaults keep the stub and the contract tests valid.
+    doc_version: str | None = None
+    superseded: bool = False
+    exact_match: bool = False      # the chunk contains an exact term from the question
 
 
 class Citation(BaseModel):
@@ -62,3 +66,5 @@ class AskResponse(BaseModel):
     confidence: Literal["high", "medium", "low"]
     retrieved: list[RetrievedRef]
     provider: str
+    cached: bool | None = None     # None = no cache in play; the UI shows a chip only for a bool
+    citations_dropped: int = 0     # citations the model produced that matched no retrieved chunk

@@ -1,0 +1,19 @@
+# Test pairs for choosing CACHE_THRESHOLD (python eval/cache_threshold.py).
+# Replace/extend these with questions about YOUR corpus. Keep at least 6 of each.
+
+should_hit:        # same meaning, different words: the cache SHOULD serve these
+  - ["What is the minimum attendance to sit the final exam?", "How much attendance do I need to be allowed in the final exam?"]
+  - ["When is a student placed on academic warning?", "At what CGPA does academic warning start?"]
+  - ["What is the fee per credit hour for BS students?", "How much does a BS credit hour cost?"]
+  - ["How do I repeat a course?", "What is the procedure for repeating a course?"]
+  - ["What is the refund policy when I drop a course?", "Do I get my tuition back if I drop a course?"]
+  - ["What is the late registration fee?", "How much do I pay for registering late?"]
+
+must_miss:         # look-alikes with a DIFFERENT answer: a hit here is a wrong answer
+  - ["What is the attendance requirement in the 2026 rules?", "What was the attendance requirement in the 2023 rules?"]
+  - ["What is the fee per credit hour for BS students?", "What is the fee per credit hour for MS students?"]
+  - ["What CGPA triggers academic warning?", "What CGPA gets a student dropped from the programme?"]
+  - ["What is the late registration fee?", "What is the transcript fee?"]
+  - ["Can I repeat a course to improve my grade?", "Can I repeat a course after failing it twice?"]
+  - ["What does clause 1.2 say?", "What does clause 1.21 say?"]
+  - ["How many days to drop a course for a full refund?", "How many days to drop a course for a 50 percent refund?"]
