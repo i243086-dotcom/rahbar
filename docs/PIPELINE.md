@@ -5,7 +5,7 @@
 
 Indexing runs once, and again when the material changes. Querying runs on every question.
 That is why the indexer is a Job (`docs/adr/0001-indexer-as-job.md`) and the API only reads.
-How the documents reach the Job: **FILL-IN** (baked into the image / fetched at start-up / a volume; say which and why).
+How the documents reach the Job: The platform loader copies the fetched corpus and _index.json into the corpus PVC. The Job and weekly CronJob mount it read-only at /corpus, keeping the source files out of the images.
 
 ## Extraction
 `indexer/pipeline/extract.py`. PDFs are read page by page with pdfplumber. A page whose text layer
