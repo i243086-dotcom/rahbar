@@ -11,6 +11,8 @@ spec:
     metadata:
       labels: {app: chroma}
     spec:
+      # The chroma Service would otherwise inject a non-numeric CHROMA_PORT.
+      enableServiceLinks: false
       serviceAccountName: chroma
       automountServiceAccountToken: false
       securityContext:

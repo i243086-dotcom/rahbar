@@ -79,12 +79,14 @@ jobs:
           pip install httpx==0.28.1 PyYAML==6.0.2
           docker load -i /tmp/images.tar.gz
           kind load docker-image --name rahbar rahbar-api:dev rahbar-ui:dev rahbar-indexer:dev
-          EVAL_RUNNER=eval/run_eval.py bash scripts/ci-stack.sh
+          INDEX_TIMEOUT=3m EVAL_RUNNER=eval/run_eval.py bash scripts/ci-stack.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: fixture-evaluation, path: /tmp/rahbar-fixture-results.json}
       - if: failure()
         run: |
           kubectl get pods -A
+          kubectl -n rahbar describe pod chroma-0 || true
+          kubectl -n rahbar logs chroma-0 --previous || kubectl -n rahbar logs chroma-0 || true
           kubectl -n rahbar logs -l app=indexer --tail=60 || true
           kubectl -n rahbar logs -l app=api --tail=25 || true
