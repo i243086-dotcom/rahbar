@@ -45,9 +45,9 @@ against the golden set, same embedding model, superseded documents excluded:
 
 | Size (words) | Overlap (words) | recall@3 | recall@5 | Chunks stored | Amplification |
 | --- | --- | --- | --- | --- | --- |
-| 200 | 25 | FILL-IN | FILL-IN | FILL-IN | FILL-IN |
-| 400 | 50 | FILL-IN | FILL-IN | FILL-IN | FILL-IN |
-| 800 | 100 | FILL-IN | FILL-IN | FILL-IN | FILL-IN |
+| 200 | 25 | 0.567 | 0.633 | 880 | 1.10 |
+| 400 | 50 | 0.567 | 0.633 | 665 | 1.06 |
+| 800 | 100 | 0.567 | 0.633 | 584 | 1.04 |
 
 Why the shipped one: FILL-IN (one paragraph that cites the table above, not a general principle).
 
