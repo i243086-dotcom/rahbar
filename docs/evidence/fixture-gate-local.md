@@ -15,3 +15,5 @@ GATE FAILED
 ```
 
 The second indexing run logged six Redis cache keys removed, so it evaluated fresh retrieval. The stub generator's injection resistance was 0% in both runs. The fixture gate checks retrieval, citation validity and abstention. Use the production model and the separate prompt tests for injection behavior. This was a local HTTP run. GitHub's blocked and green PR screenshots require a hosted workflow run.
+
+A separate Docker smoke test started the built API image with a read-only root filesystem, no Linux capabilities, and no-new-privileges. Docker reported user 10001:10001. The stub API returned 200 from /readyz and answered from context through /api/ask.
