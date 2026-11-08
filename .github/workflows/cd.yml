@@ -1,0 +1,51 @@
+name: CD
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: make install && .venv/bin/pip install pytest-cov==6.1.1 && make lint
+      - run: cd api && ../.venv/bin/pytest -q --cov=app --cov-fail-under=60
+      - run: cd indexer && ../.venv/bin/pytest -q
+  build-push:
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      TAG: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - run: |
+          for component in api ui indexer; do
+            image="$DOCKERHUB_USERNAME/rahbar-$component:$TAG"
+            docker build -t "$image" "$component"
+            docker push "$image"
+          done
+  deploy:
+    needs: build-push
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      TAG: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: helm/kind-action@v1.12.0
+        with: {cluster_name: rahbar, version: v0.33.0, kubectl_version: v1.34.11, node_image: 'kindest/node:v1.34.11@sha256:44e222ee2132dab25ff87301682f89eb82c7880ea3a1bf543bfe9708fd08d67d'}
+      - run: |
+          pip install httpx==0.28.1 PyYAML==6.0.2
+          bash scripts/ci-stack.sh "$DOCKERHUB_USERNAME/" "$TAG"
+          kubectl -n rahbar rollout status deployment/api

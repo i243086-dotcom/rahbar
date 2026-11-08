@@ -1,15 +1,20 @@
 # Engineering notes
 
-<!-- STARTER-TODO(7): answer all seven questions from section 7 of the case study, each
-     pointing to your own files and line numbers. A generic answer scores zero. -->
-
 ## 1. Indexing in API startup: what breaks with 3 replicas and one Chroma volume?
+
+The three API replicas would race to replace a shared collection, and a pod restart would repeat OCR and embedding. The Job at [indexer-job.yaml line 2](../k8s/base/indexer-job.yaml#L2) is the independent writer. Its failure and retry lifecycle cannot stall unrelated API updates.
 
 ## 2. Readiness and liveness swapped, Chroma slow for 90 seconds: what happens?
 
+The [API probe configuration](../k8s/base/api.yaml#L37) puts process health on liveness and dependency checks on readiness. Swapping them makes a slow Chroma count as liveness failure. Three failures can restart each of the three API pods during a 90-second outage. Readiness would meanwhile admit a fresh process before it could serve grounded answers.
+
 ## 3. What does a CPU-based HPA measure on a generation service, and what should scale it?
 
+The [HPA](../k8s/base/hpa.yaml#L13) targets 70% CPU relative to the CPU request. Waiting for Ollama raises latency but adds little API CPU. Generation queue depth or active requests per replica would make a better signal. Export the metric, expose it with a Kubernetes metrics adapter and tune the target under load.
+
 ## 4. The indexer's peak memory, its limit, the margin, and the exit code when it is wrong
+
+The provisional memory limit is 2 GiB at [indexer-job.yaml line 48](../k8s/base/indexer-job.yaml#L48). Record repeated kubectl top samples during OCR and subtract the highest observed value from the limit for the measured margin. Exit code 137 with reason OOMKilled indicates the workload exceeded its memory limit. Capture the measurement on the real-corpus run.
 
 ## 5. recall@5 by question type: where is it worst, and why?
 
@@ -52,3 +57,8 @@ some of them through, and the model confidently answers from the wrong passages.
 an error. That is the silent failure the pin exists to make unreachable.
 
 ## 7. The failure that cost us more than an hour
+### Student B integration diagnosis
+
+The Docker client was present, but docker version could not connect to the desktop-linux named pipe. The Docker CLI launcher also could not find the machine-wide registry key. The executable was installed under the current user's Local Programs directory. Launching that executable and running docker info with host access established that the server was running. The lesson was to check the server separately from client installation before debugging Kubernetes.
+
+Hosted CI then exposed a Chroma crash that the read-only Docker smoke test had not seen. I reproduced it by setting CHROMA_PORT to tcp://10.96.0.18:8000 in the same image. Chroma exited 101 and its Rust configuration parser reported that PORT expected a u16. The Kubernetes Service had injected that variable. Setting enableServiceLinks to false on the StatefulSet removed the collision, and the hosted end-to-end run passed. DNS-based service discovery still works.

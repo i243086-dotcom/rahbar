@@ -12,4 +12,4 @@ Everything marked FILL-IN in the docs was left for us on purpose, because it mus
 on our own machine. We can explain every module above line by line.
 
 ## Student B (platform and DevOps)
-FILL-IN (your partner's own disclosure).
+OpenAI Codex adapted the Docker images, Kubernetes overlays, workflow and deployment scripts to the shared contract. It also drafted platform documentation and ran local verification. Student B should append the changes and verification they personally performed, with their reasons.

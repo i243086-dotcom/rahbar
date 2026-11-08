@@ -5,6 +5,7 @@
 
 Indexing runs once, and again when the material changes. Querying runs on every question.
 That is why the indexer is a Job (`docs/adr/0001-indexer-as-job.md`) and the API only reads.
+How the documents reach the Job: The platform loader copies the fetched corpus and _index.json into the corpus PVC. The Job and weekly CronJob mount it read-only at /corpus, keeping the source files out of the images.
 How the documents reach the Job: a volume. The indexer image is built from `indexer/`, so `corpus/` is not inside it and the PDFs are not committed either; `corpus/raw` (including `_index.json`) is copied into a PVC (`corpus-data`) that the Job mounts read-only, so re-indexing needs no image rebuild.
 
 ## Extraction

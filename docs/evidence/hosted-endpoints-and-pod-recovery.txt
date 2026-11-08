@@ -1,0 +1,64 @@
+2026-11-08T12:41:29Z
+NAME   ENDPOINTS                                            AGE
+api    10.244.0.19:8000,10.244.0.20:8000,10.244.0.21:8000   34s
+3 ready endpoints
+pod "api-65f67d78b7-4h6rv" deleted from rahbar namespace
+{
+  "request_id": "c8a08a7afae1a2eebbafac81ce7d27d2",
+  "answer": "(stub) A model would answer here from 5 passages. The first one says: 1. Attendance\n\n1.1 A student must attend at least 80 percent of the lectures of each course to be allowed to sit the final examination. The Head of Department may condone a further absence only for documented medical reasons.\n\n1.2 A student who falls below the minimum attendance receives the grade FA in that course.",
+  "citations": [
+    {
+      "source": "academic-rules-2026.md",
+      "section": "1. Attendance",
+      "page": 1
+    }
+  ],
+  "answered_from_context": true,
+  "confidence": "low",
+  "retrieved": [
+    {
+      "chunk_id": "academic-rules-2026-0001",
+      "source": "academic-rules-2026.md",
+      "section": "1. Attendance",
+      "page": 1,
+      "score": 0.2887
+    },
+    {
+      "chunk_id": "fees-2026-0000",
+      "source": "fees-2026.md",
+      "section": "1. Tuition",
+      "page": 1,
+      "score": 0.1091
+    },
+    {
+      "chunk_id": "academic-rules-2026-0003",
+      "source": "academic-rules-2026.md",
+      "section": "3. Repeating a course",
+      "page": 1,
+      "score": 0.0772
+    },
+    {
+      "chunk_id": "academic-rules-2026-0000",
+      "source": "academic-rules-2026.md",
+      "section": "Margalla Institute of Technology: Academic Rules (2026 edition)",
+      "page": 1,
+      "score": 0.0
+    },
+    {
+      "chunk_id": "academic-rules-2026-0002",
+      "source": "academic-rules-2026.md",
+      "section": "2. Academic warning",
+      "page": 1,
+      "score": 0.0
+    }
+  ],
+  "provider": "stub",
+  "cached": true,
+  "citations_dropped": 0
+}
+pod/api-65f67d78b7-4h6rv condition met
+deployment "api" successfully rolled out
+NAME                   READY   STATUS    RESTARTS   AGE   IP            NODE                   NOMINATED NODE   READINESS GATES
+api-65f67d78b7-5pc28   1/1     Running   0          13s   10.244.0.21   rahbar-control-plane   <none>           <none>
+api-65f67d78b7-7jtkp   1/1     Running   0          6s    10.244.0.22   rahbar-control-plane   <none>           <none>
+api-65f67d78b7-r66vr   1/1     Running   0          21s   10.244.0.19   rahbar-control-plane   <none>           <none>

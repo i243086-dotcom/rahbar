@@ -4,12 +4,16 @@
 SHELL := /bin/bash
 NS ?= rahbar
 TAG ?= dev
+PROFILE ?= rahbar
+MEMORY ?= 6144
+OVERLAY ?= dev
+CORPUS ?= corpus/raw
 PY ?= python3
 VENV ?= .venv
 BIN := $(abspath $(VENV))/bin
 # The Ingress address. On Linux this is the minikube IP. On macOS or Windows with the
 # docker driver, run `minikube tunnel` in another terminal and use INGRESS_IP=127.0.0.1.
-INGRESS_IP ?= $(shell minikube ip 2>/dev/null)
+INGRESS_IP ?= $(shell minikube -p $(PROFILE) ip 2>/dev/null)
 HOST ?= rahbar.local
 
 .DEFAULT_GOAL := help
@@ -36,20 +40,20 @@ dev: ## run the API with stubs on http://localhost:8000, serving the chat UI too
 	cd api && SERVE_UI_DIR=../ui RETRIEVER=stub LLM_PROVIDER=stub $(BIN)/uvicorn app.main:app --reload --port 8000
 
 cluster: ## start minikube with Calico, then enable metrics-server and ingress
-	minikube start --driver=docker --cni=calico --memory=6144 --cpus=4
-	minikube addons enable metrics-server
-	minikube addons enable ingress
+	minikube -p $(PROFILE) start --driver=docker --cni=calico --memory=$(MEMORY) --cpus=4
+	minikube -p $(PROFILE) addons enable metrics-server
+	minikube -p $(PROFILE) addons enable ingress
 
 images: ## build the three images and load them into minikube (needs yours: Dockerfiles)
 	docker build -t rahbar-api:$(TAG) api
 	docker build -t rahbar-indexer:$(TAG) indexer
 	docker build -t rahbar-ui:$(TAG) ui
-	minikube image load rahbar-api:$(TAG)
-	minikube image load rahbar-indexer:$(TAG)
-	minikube image load rahbar-ui:$(TAG)
+	minikube -p $(PROFILE) image load rahbar-api:$(TAG)
+	minikube -p $(PROFILE) image load rahbar-indexer:$(TAG)
+	minikube -p $(PROFILE) image load rahbar-ui:$(TAG)
 
 apply: ## apply the dev overlay (needs yours: manifests)
-	kubectl apply -k k8s/overlays/dev
+	PATH="$(BIN):$$PATH" bash scripts/deploy.sh "k8s/overlays/$(OVERLAY)" "$(CORPUS)"
 
 secret: ## create the LLM key Secret from the LLM_API_KEY variable; never from a file
 	@test -n "$$LLM_API_KEY" || { echo "export LLM_API_KEY=... first"; exit 1; }
@@ -72,7 +76,7 @@ eval: ## score eval/golden.yaml through the Ingress and apply the CI gate
 	$(BIN)/python eval/run_eval.py --api "http://$(INGRESS_IP)" --host $(HOST)
 
 eval-fixtures: ## score the CI fixture golden set against a local `make dev`
-	$(BIN)/python eval/run_eval.py --api http://localhost:8000 --golden eval/fixtures/golden.fixture.yaml --out /tmp/rahbar-fixture-results.json
+	$(BIN)/python eval/run_eval.py --api "http://$(INGRESS_IP)" --host "$(HOST)" --golden eval/fixtures/golden.fixture.yaml --baseline eval/fixtures/baseline.fixture.json --out /tmp/rahbar-fixture-results.json
 
 check: ## run the submission checker
 	$(PY) scripts/check_submission.py
