@@ -26,3 +26,5 @@ venv/
 
 # Index dumps from `pipeline.run --dry-run --dump`
 chunks.jsonl
+.coverage
+k8s/overlays/.local-*/
