@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: corpus-loader
+  namespace: rahbar
+  labels: {app: corpus-loader}
+spec:
+  serviceAccountName: indexer
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    runAsGroup: 10001
+    fsGroup: 10001
+    seccompProfile: {type: RuntimeDefault}
+  restartPolicy: Never
+  containers:
+    - name: loader
+      image: rahbar-indexer:dev
+      imagePullPolicy: IfNotPresent
+      command: ["/bin/sleep", "1800"]
+      volumeMounts:
+        - {name: corpus, mountPath: /corpus}
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
+      resources:
+        requests:
+          cpu: 20m
+          memory: 16Mi
+        limits:
+          cpu: 200m
+          memory: 64Mi
+  volumes:
+    - name: corpus
+      persistentVolumeClaim: {claimName: corpus}
