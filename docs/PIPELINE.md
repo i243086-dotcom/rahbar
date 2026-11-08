@@ -5,7 +5,7 @@
 
 Indexing runs once, and again when the material changes. Querying runs on every question.
 That is why the indexer is a Job (`docs/adr/0001-indexer-as-job.md`) and the API only reads.
-How the documents reach the Job: **FILL-IN** (baked into the image / fetched at start-up / a volume; say which and why).
+How the documents reach the Job: a volume. The indexer image is built from `indexer/`, so `corpus/` is not inside it and the PDFs are not committed either; `corpus/raw` (including `_index.json`) is copied into a PVC (`corpus-data`) that the Job mounts read-only, so re-indexing needs no image rebuild.
 
 ## Extraction
 `indexer/pipeline/extract.py`. PDFs are read page by page with pdfplumber. A page whose text layer
@@ -14,9 +14,12 @@ has fewer than 25 characters is rasterised at 300 dpi and OCR'd with Tesseract, 
 pipe-separated rows, so a column stays attached to its label. HTML pages keep `<table>` rows as pipe
 rows; Markdown is read as is. One bad document is logged and skipped, not fatal.
 
-* **Documents that needed OCR:** FILL-IN (from `python corpus/inspect_corpus.py` and the indexer's `extracted` log lines).
+* **Documents that needed OCR:** 41 pages in total: 24 of 26 pages of the 2023 Undergraduate Academic Rules, 8 of 8 pages of the Faculty Start-ups Policy, 5 pages of the 2026 Academic Rules Handbook and 4 pages of the Student Handbook. Nothing was skipped (dry run: 665 chunks from 9 documents).
 * **Before and after for a table:** FILL-IN. Paste the raw `pdftotext` output of one table beside the pipe rows the indexer produced (see `python -m pipeline.run --dry-run --dump`).
-* **What could not be recovered:** FILL-IN (for example: handwriting, rotated scans, multi-column layouts that interleave, merged table cells).
+* **What could not be recovered:**
+  1. Two-column pages 8-11 of the 2026 handbook are interleaved: chunk `academic-rules-handbook-jun-2026-0031` mixes clause 1.20 with text of 1.8 and 1.9, and `-0046` interleaves 1.22 with an SGPA/CGPA paragraph. Clean copies of those clauses survive (`-0039` is 1.21, `-0040` is 1.22).
+  2. 2023 OCR: the table of contents is garbled, chunk `-0022` (GPA calculation 2.4-2.11) kept the clause numbers but lost their text, and the 2023 attendance clause 1.21 is split across chunks `-0012` and `-0013`.
+  3. Scanned policy: OCR junk at the start of some chunks and wrong section labels (every page-2 chunk is labelled `1. Purpose`). Some Student Handbook chunks also carry wrong section labels.
 
 ## Cleaning
 `indexer/pipeline/clean.py`. Rules: normalise unicode (NFKC, ligatures, non-breaking spaces, control
@@ -37,8 +40,8 @@ leaders; re-join words hyphenated across a line break; collapse blank lines.
 section, paragraph, sentence, hard cut. Overlap stays inside a section. Each chunk starts with its
 heading.
 
-Shipped: size **FILL-IN**, overlap **FILL-IN**. Storage amplification (stored words / original words)
-is printed by the indexer as `storage_amplification`: **FILL-IN** (the lecture's example was 150 / 120 = 1.25).
+Shipped: size **400** words, overlap **50** words. Storage amplification (stored words / original words)
+is printed by the indexer as `storage_amplification`: **1.059** (91,840 stored / 86,708 original words; the lecture's example was 150 / 120 = 1.25).
 
 Measured with `python eval/chunk_experiment.py --corpus corpus/raw --golden eval/golden.yaml --configs 200:25,400:50,800:100`
 against the golden set, same embedding model, superseded documents excluded:
@@ -49,7 +52,7 @@ against the golden set, same embedding model, superseded documents excluded:
 | 400 | 50 | 0.567 | 0.633 | 665 | 1.06 |
 | 800 | 100 | 0.567 | 0.633 | 584 | 1.04 |
 
-Why the shipped one: FILL-IN (one paragraph that cites the table above, not a general principle).
+Why the shipped one: recall was identical for all three configurations (0.567 at 3, 0.633 at 5), so recall did not decide it. The chunker is structure-aware, so most clauses (under 200 words) are never cut whatever the target size, and the golden set scores (source, section) pairs rather than chunk boundaries. We shipped 400/50 on cost and risk: 200/25 stores 880 chunks (about 32% more than 665) for no gain, and 800/100 allows long chunks in which one clause is a small part of a large section. The experiment is vector search only and always excludes superseded documents, so its exact-term score (0.33) and version score (0.5) understate the live system.
 
 ## Embedding
 Model `nomic-embed-text` (768 dimensions) through Ollama's `/api/embed`, batched 16 at a time.
@@ -62,7 +65,7 @@ logs which models conflict. The indexer builds into `rahbar__build` and renames 
 only when every chunk is written, so a failed Job leaves the old index serving.
 
 Metadata schema (every chunk): `source`, `section`, `page`, `doc_version`, `superseded`.
-Chunk count: **FILL-IN**.
+Chunk count: **665** (768-dimension vectors, model `nomic-embed-text`).
 
 ## Retrieval
 `api/app/retrieval/chroma.py`. The question is embedded once (the vector is reused for the cache
@@ -78,7 +81,7 @@ searched literally with `where_document $contains`; chunks containing them get a
 If no retrieved chunk has similarity >= `RELEVANCE_FLOOR`, and none contains the question's exact
 term, the API returns `answered_from_context: false` without calling the model. The floor is chosen
 from `min_top1_score_answerable` and `max_top1_score_must_abstain` in `eval/results.json`: it belongs
-between them. Shipped value: **FILL-IN**, from those two numbers: FILL-IN and FILL-IN.
+between them. Shipped value: **0.63**, from `max_top1_score_must_abstain` = 0.6235 (the hostel questions) and `min_top1_score_answerable` = 0.6364. The gap is only 0.013, so the floor is a safety net, not the main mechanism: the exact-term bypass keeps clause questions answerable, and the model's own "not in the documents" answer is the second layer.
 
 ## Semantic cache
 `api/app/services/cache.py`, ADR `docs/adr/0003-cache-store.md`. A hit is cosine similarity >=

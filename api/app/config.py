@@ -42,7 +42,7 @@ class Settings:
     llm_api_key: str = field(default="", repr=False)   # from the Secret; never log it
 
     # Query pipeline (section 3.2 to 3.4). All of these come from the ConfigMap.
-    relevance_floor: float = 0.45     # RELEVANCE_FLOOR: below this similarity, abstain
+    relevance_floor: float = 0.63     # RELEVANCE_FLOOR: below this similarity, abstain
     fetch_k: int = 20                 # FETCH_K: candidates pulled before re-ranking to top_k
     exact_boost: float = 0.10         # EXACT_BOOST: added to a chunk that contains a query's exact term
     llm_timeout: float = 120.0        # LLM_TIMEOUT seconds
@@ -81,7 +81,7 @@ def get_settings() -> Settings:
         ollama_url=os.environ.get("OLLAMA_URL", "http://host.minikube.internal:11434"),
         hosted_base_url=os.environ.get("HOSTED_BASE_URL", ""),
         llm_api_key=os.environ.get("LLM_API_KEY", ""),
-        relevance_floor=_float("RELEVANCE_FLOOR", 0.45),
+        relevance_floor=_float("RELEVANCE_FLOOR", 0.63),
         fetch_k=_int("FETCH_K", 20),
         exact_boost=_float("EXACT_BOOST", 0.10),
         llm_timeout=_float("LLM_TIMEOUT", 120.0),
