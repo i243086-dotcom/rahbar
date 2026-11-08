@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-data
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests: {storage: 512Mi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app: redis}
+  template:
+    metadata:
+      labels: {app: redis}
+    spec:
+      serviceAccountName: redis
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: redis
+          image: redis:7.4-alpine
+          args: ["redis-server", "--dir", "/data", "--appendonly", "yes",
+                 "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru"]
+          ports: [{containerPort: 6379}]
+          readinessProbe:
+            exec: {command: ["redis-cli", "ping"]}
+          volumeMounts:
+            - {name: data, mountPath: /data}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 50m
+              memory: 48Mi
+            limits:
+              cpu: 350m
+              memory: 160Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: redis-data}

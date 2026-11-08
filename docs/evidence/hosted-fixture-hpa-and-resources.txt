@@ -1,0 +1,10 @@
+deployment "metrics-server" successfully rolled out
+NAME   REFERENCE        TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+api    Deployment/api   cpu: 2%/70%   3         8         3          2m4s
+POD                      NAME     CPU(cores)   MEMORY(bytes)
+api-54b5fb4b95-64bvt     api      2m           66Mi
+api-54b5fb4b95-lxfbv     api      2m           66Mi
+api-54b5fb4b95-nm8m9     api      2m           66Mi
+chroma-0                 chroma   1m           31Mi
+redis-5467888d6c-p5kps   redis    8m           3Mi
+ui-7c686847fd-chdzh      ui       1m           2Mi
