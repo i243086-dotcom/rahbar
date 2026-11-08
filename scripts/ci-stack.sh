@@ -71,3 +71,6 @@ report = json.loads(Path("/tmp/rahbar-fixture-results.json").read_text())
 if not report.get("citations_total") or report.get("abstention_correctness") != 1:
     raise SystemExit("Fixture smoke test requires cited answers and a correct abstention")
 PY
+if [[ -n "${PLATFORM_EVIDENCE_DIR:-}" ]]; then
+  bash scripts/fixture-platform-evidence.sh "$PLATFORM_EVIDENCE_DIR"
+fi

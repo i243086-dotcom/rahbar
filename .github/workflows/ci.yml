@@ -79,10 +79,13 @@ jobs:
           pip install httpx==0.28.1 PyYAML==6.0.2
           docker load -i /tmp/images.tar.gz
           kind load docker-image --name rahbar rahbar-api:dev rahbar-ui:dev rahbar-indexer:dev
-          INDEX_TIMEOUT=3m EVAL_RUNNER=eval/run_eval.py bash scripts/ci-stack.sh
+          INDEX_TIMEOUT=3m EVAL_RUNNER=eval/run_eval.py PLATFORM_EVIDENCE_DIR=/tmp/rahbar-platform-evidence bash scripts/ci-stack.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: fixture-evaluation, path: /tmp/rahbar-fixture-results.json}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: fixture-platform-evidence, path: /tmp/rahbar-platform-evidence}
       - if: failure()
         run: |
           kubectl get pods -A
