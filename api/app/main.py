@@ -32,9 +32,19 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.settings = settings
     app.state.retriever = get_retriever(settings)
     app.state.provider = get_provider(settings)
-    # STARTER-TODO(4.4): compare the collection's embedding-model metadata with
-    # settings.embed_model here, and make /readyz fail on a mismatch.
-    # This process only reads the index. The indexer Job writes it.
+    app.state.cache = None
+    if settings.cache_enabled:
+        from .services.cache import SemanticCache
+
+        app.state.cache = SemanticCache(settings)
+    # The embedding pin (section 4.4): compare the index's recorded model with ours now, so the
+    # conflict is in the log from the first second. /readyz repeats the check on every probe and
+    # keeps the pod out of the Service until it is resolved. This process only reads the index.
+    if settings.retriever == "chroma":
+        from .services.readiness import check_readiness
+
+        ready, checks = check_readiness(app.state)
+        log.info("startup readiness", extra={"ready": ready, "checks": checks})
     log.info(
         "api started",
         extra={"retriever": settings.retriever, "llm_provider": settings.llm_provider,

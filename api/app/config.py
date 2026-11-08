@@ -41,7 +41,30 @@ class Settings:
     hosted_base_url: str = ""        # e.g. an OpenAI-compatible endpoint
     llm_api_key: str = field(default="", repr=False)   # from the Secret; never log it
 
+    # Query pipeline (section 3.2 to 3.4). All of these come from the ConfigMap.
+    relevance_floor: float = 0.45     # RELEVANCE_FLOOR: below this similarity, abstain
+    fetch_k: int = 20                 # FETCH_K: candidates pulled before re-ranking to top_k
+    exact_boost: float = 0.10         # EXACT_BOOST: added to a chunk that contains a query's exact term
+    llm_timeout: float = 120.0        # LLM_TIMEOUT seconds
+    llm_num_ctx: int = 8192           # LLM_NUM_CTX: Ollama truncates silently when evidence overflows it
+
+    # Semantic cache (section 3.3). Off by default so `make dev` and the unit tests need no Redis.
+    cache_enabled: bool = False       # CACHE_ENABLED
+    cache_threshold: float = 0.92     # CACHE_THRESHOLD: cosine similarity for a hit
+    cache_ttl_seconds: int = 21600    # CACHE_TTL_SECONDS
+    cache_max_entries: int = 200      # CACHE_MAX_ENTRIES
+    redis_host: str = "redis"         # REDIS_HOST
+    redis_port: int = 6379            # REDIS_PORT
+
+    # Failure-injection switches for docs/FAILURE-ANALYSIS.md. Defaults are the healthy values.
+    include_superseded: bool = False  # stage E: INCLUDE_SUPERSEDED=true removes the version filter
+    prompt_grounding: bool = True     # stage D: PROMPT_GROUNDING=false drops "use only the evidence"
+
     log_level: str = "INFO"
+
+
+def _bool(name: str, default: bool) -> bool:
+    return os.environ.get(name, str(default)).strip().lower() in {"1", "true", "yes", "on"}
 
 
 def get_settings() -> Settings:
@@ -58,5 +81,18 @@ def get_settings() -> Settings:
         ollama_url=os.environ.get("OLLAMA_URL", "http://host.minikube.internal:11434"),
         hosted_base_url=os.environ.get("HOSTED_BASE_URL", ""),
         llm_api_key=os.environ.get("LLM_API_KEY", ""),
+        relevance_floor=_float("RELEVANCE_FLOOR", 0.45),
+        fetch_k=_int("FETCH_K", 20),
+        exact_boost=_float("EXACT_BOOST", 0.10),
+        llm_timeout=_float("LLM_TIMEOUT", 120.0),
+        llm_num_ctx=_int("LLM_NUM_CTX", 8192),
+        cache_enabled=_bool("CACHE_ENABLED", False),
+        cache_threshold=_float("CACHE_THRESHOLD", 0.92),
+        cache_ttl_seconds=_int("CACHE_TTL_SECONDS", 21600),
+        cache_max_entries=_int("CACHE_MAX_ENTRIES", 200),
+        redis_host=os.environ.get("REDIS_HOST", "redis"),
+        redis_port=_int("REDIS_PORT", 6379),
+        include_superseded=_bool("INCLUDE_SUPERSEDED", False),
+        prompt_grounding=_bool("PROMPT_GROUNDING", True),
         log_level=os.environ.get("LOG_LEVEL", "INFO"),
     )

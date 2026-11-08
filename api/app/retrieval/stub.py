@@ -42,5 +42,16 @@ _PASSAGES = [
 class StubRetriever:
     name = "stub"
 
-    def retrieve(self, question: str, k: int) -> list[Passage]:
+    def embed_query(self, question: str) -> list[float] | None:
+        return None
+
+    def scope(self, question: str) -> str:
+        return "current"
+
+    def index_id(self) -> str:
+        return "stub"
+
+    def retrieve(
+        self, question: str, k: int, query_vector: list[float] | None = None
+    ) -> list[Passage]:
         return [p.model_copy() for p in _PASSAGES[:k]]
