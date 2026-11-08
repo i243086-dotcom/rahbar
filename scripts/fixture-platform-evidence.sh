@@ -3,6 +3,10 @@
 set -euo pipefail
 evidence=${1:?pass an evidence directory}
 mkdir -p "$evidence"
+# The disposable kind kubelets use self-signed serving certificates.
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.8.1/components.yaml
+kubectl -n kube-system patch deployment metrics-server --type=json \
+  -p '[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
 k() { kubectl -n rahbar "$@"; }
 ask() {
   curl --fail --silent --show-error --max-time 20 \
@@ -62,3 +66,35 @@ trap restore_pin EXIT
   ask
 } > "$evidence/embedding-pin.txt" 2>&1
 cat "$evidence/embedding-pin.txt"
+{
+  previous=$(k get deployment api -o jsonpath='{.spec.template.spec.containers[0].image}')
+  canary=rahbar-api:rollout-proof
+  docker build --tag "$canary" - <<EOF
+FROM $previous
+ENV LOG_LEVEL=DEBUG
+EOF
+  kind load docker-image --name rahbar "$canary"
+  k set image deployment/api "api=$canary"
+  k rollout status deployment/api --timeout=180s
+  k exec deployment/api -- printenv LOG_LEVEL
+  ask
+  k rollout undo deployment/api
+  k rollout status deployment/api --timeout=180s
+  current=$(k get deployment api -o jsonpath='{.spec.template.spec.containers[0].image}')
+  printf 'Restored image: %s\n' "$current"
+  test "$current" = "$previous"
+  ask
+} | tee "$evidence/rollout-and-rollback.txt"
+
+{
+  kubectl -n kube-system rollout status deployment/metrics-server --timeout=180s
+  utilization=
+  for _ in $(seq 1 24); do
+    utilization=$(k get hpa api -o jsonpath='{.status.currentMetrics[0].resource.current.averageUtilization}')
+    if [[ -n "$utilization" ]]; then break; fi
+    sleep 5
+  done
+  test -n "$utilization"
+  k get hpa api
+  k top pods --containers
+} | tee "$evidence/fixture-hpa-and-resources.txt"

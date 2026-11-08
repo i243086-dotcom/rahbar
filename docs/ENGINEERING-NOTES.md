@@ -60,3 +60,5 @@ an error. That is the silent failure the pin exists to make unreachable.
 ### Student B integration diagnosis
 
 The Docker client was present, but docker version could not connect to the desktop-linux named pipe. The Docker CLI launcher also could not find the machine-wide registry key. The executable was installed under the current user's Local Programs directory. Launching that executable and running docker info with host access established that the server was running. The lesson was to check the server separately from client installation before debugging Kubernetes.
+
+Hosted CI then exposed a Chroma crash that the read-only Docker smoke test had not seen. I reproduced it by setting CHROMA_PORT to tcp://10.96.0.18:8000 in the same image. Chroma exited 101 and its Rust configuration parser reported that PORT expected a u16. The Kubernetes Service had injected that variable. Setting enableServiceLinks to false on the StatefulSet removed the collision, and the hosted end-to-end run passed. DNS-based service discovery still works.
