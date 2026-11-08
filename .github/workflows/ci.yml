@@ -50,13 +50,14 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         component: [api, ui, indexer]
     steps:
       - uses: actions/download-artifact@v4
         with: {name: ci-images, path: /tmp}
       - run: docker load -i /tmp/images.tar.gz
-      - uses: aquasecurity/trivy-action@0.33.1
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: rahbar-${{ matrix.component }}:dev
           severity: HIGH,CRITICAL
