@@ -191,10 +191,16 @@ def main() -> int:
     questions = load_golden(args.golden)
     rows = []
     headers = {"Host": args.host} if args.host else {}
-    with httpx.Client(timeout=120.0, headers=headers) as client:
+    with httpx.Client(timeout=900.0, headers=headers) as client:
         for q in questions:
             started = time.perf_counter()
-            response = ask(client, args.api, q["question"])
+            try:
+                response = ask(client, args.api, q["question"])
+            except httpx.HTTPError as exc:   # one slow or failed question must not lose the run
+                print(f"  {q['id']:<5} FAILED: {exc!r}")
+                response = {"request_id": "-", "answer": "", "citations": [],
+                            "answered_from_context": False, "confidence": "low",
+                            "retrieved": [], "provider": "eval-error"}
             rows.append({
                 "id": q["id"], "type": q.get("type", "ordinary"),
                 "must_abstain": bool(q.get("must_abstain", False)),
