@@ -47,6 +47,9 @@ patches:
         path: /data/LLM_PROVIDER
         value: stub
       - op: replace
+        path: /data/TOP_K
+        value: "1"
+      - op: replace
         path: /data/RELEVANCE_FLOOR
         value: "0.05"
       - op: replace
