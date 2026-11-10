@@ -1,0 +1,11 @@
+NAME                                      REFERENCE        TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/api   Deployment/api   cpu: 3%/70%   3         8         3          12m
+
+NAME               ENDPOINTS                                               AGE
+endpoints/api      10.244.20.79:8000,10.244.20.80:8000,10.244.20.81:8000   12m
+endpoints/chroma   10.244.20.77:8000                                       12m
+endpoints/redis    10.244.20.75:6379                                       12m
+endpoints/ui       10.244.20.76:8080                                       12m
+
+NAME                               CLASS   HOSTS          ADDRESS        PORTS   AGE
+ingress.networking.k8s.io/rahbar   nginx   rahbar.local   192.168.49.2   80      12m

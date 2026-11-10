@@ -1,0 +1,47 @@
+{
+  "request_id": "3985f6caa962548f7b03bc4a391abe6b",
+  "answer": "The documents do not cover hostel rules for visitors and curfew.",
+  "citations": [],
+  "answered_from_context": false,
+  "confidence": "low",
+  "retrieved": [
+    {
+      "chunk_id": "student-handbook-jun-2026-0116",
+      "source": "student-handbook-jun-2026.pdf",
+      "section": "19. All users must observe Lab rules. Breach of any of these",
+      "page": 38,
+      "score": 0.6236
+    },
+    {
+      "chunk_id": "student-handbook-jun-2026-0023",
+      "source": "student-handbook-jun-2026.pdf",
+      "section": "16. Students are advised to strictly follow the code of conduct",
+      "page": 10,
+      "score": 0.6217
+    },
+    {
+      "chunk_id": "student-handbook-jun-2026-0030",
+      "source": "student-handbook-jun-2026.pdf",
+      "section": "16. Students are advised to strictly follow the code of conduct",
+      "page": 11,
+      "score": 0.6217
+    },
+    {
+      "chunk_id": "student-handbook-jun-2026-0123",
+      "source": "student-handbook-jun-2026.pdf",
+      "section": "19. All users must observe Lab rules. Breach of any of these",
+      "page": 45,
+      "score": 0.6195
+    },
+    {
+      "chunk_id": "student-handbook-jun-2026-0019",
+      "source": "student-handbook-jun-2026.pdf",
+      "section": "6. Students should refrain from actions that might damage the",
+      "page": 9,
+      "score": 0.6118
+    }
+  ],
+  "provider": "ollama",
+  "cached": false,
+  "citations_dropped": 0
+}

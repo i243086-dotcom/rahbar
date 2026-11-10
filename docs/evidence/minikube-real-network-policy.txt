@@ -1,0 +1,15 @@
+kube-system     calico-kube-controllers-59556d9b4c-jz556   1/1     Running       1 (15m ago)   15m
+kube-system     calico-node-v7vlq                          1/1     Running       0             15m
+NAME           POD-SELECTOR           AGE
+api            app=api                12m
+chroma         app=chroma             12m
+default-deny   <none>                 12m
+dns            <none>                 12m
+indexer        app=indexer            12m
+ollama-host    app in (api,indexer)   12m
+redis          app=redis              12m
+ui             app=ui                 12m
+Connecting to chroma:8000 (10.102.82.238:8000)
+wget: download timed out
+command terminated with exit code 1
+{"nanosecond heartbeat":1794327175959877184}

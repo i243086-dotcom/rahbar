@@ -14,7 +14,7 @@ The [HPA](../k8s/base/hpa.yaml#L13) targets 70% CPU relative to the CPU request.
 
 ## 4. The indexer's peak memory, its limit, the margin, and the exit code when it is wrong
 
-The provisional memory limit is 2 GiB at [indexer-job.yaml line 48](../k8s/base/indexer-job.yaml#L48). Record repeated kubectl top samples during OCR and subtract the highest observed value from the limit for the measured margin. Exit code 137 with reason OOMKilled indicates the workload exceeded its memory limit. Capture the measurement on the real-corpus run.
+The highest observed indexer memory was 509 MiB across 130 samples on the real-corpus Minikube run. Against the 2 GiB limit in [indexer-job.yaml line 48](../k8s/base/indexer-job.yaml#L48), that leaves 1,539 MiB of observed headroom. The 1 GiB request reserves capacity for extraction and OCR spikes. The highest observed CPU was 1,250m against the 1,500m limit. These are samples, so shorter spikes may fall between readings. An indexer container killed for exceeding its memory limit reports exit code 137 with reason `OOMKilled`. [Raw kubectl top samples](evidence/minikube-real-indexer-resources.txt)
 
 ## 5. recall@5 by question type: where is it worst, and why?
 
