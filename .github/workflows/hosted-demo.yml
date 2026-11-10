@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 40
     env:
       PROFILE: rahbar-demo
-      PROOF: ${{ github.workspace }}/.demo-evidence
+      PROOF: ${{ github.workspace }}/demo-evidence
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -49,6 +49,7 @@ jobs:
           docker exec rahbar-demo-ollama ollama pull nomic-embed-text
           echo "OLLAMA_HOST_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' rahbar-demo-ollama)" >> "$GITHUB_ENV"
       - name: Index the corpus and capture pod usage
+        id: index
         run: |
           docker exec rahbar-demo-ollama ollama pull llama3.2:3b > "$PROOF/ollama-pull.txt" 2>&1 &
           model_pull=$!
@@ -64,6 +65,7 @@ jobs:
           trap 'kill "$sampler" 2>/dev/null || true' EXIT
           bash scripts/deploy.sh k8s/overlays/dev corpus/raw | tee "$PROOF/real-deploy.txt"
           grep -Eq 'indexer[[:space:]]+[0-9]+m[[:space:]]+[0-9]+Mi' "$PROOF/real-indexer-resources.txt"
+          awk '$2 == "indexer" && $4 + 0 > peak {peak = $4 + 0; row = $0} END {print row}' "$PROOF/real-indexer-resources.txt"
           kubectl -n rahbar get hpa,endpoints,ingress > "$PROOF/real-cluster-status.txt"
           wait "$model_pull" || true
       - name: Verify NetworkPolicy enforcement
@@ -71,14 +73,17 @@ jobs:
           {
             kubectl get pods -A | grep calico
             kubectl -n rahbar get networkpolicy
-            if kubectl -n rahbar exec deploy/ui -- wget -T 3 -O- http://chroma:8000/api/v2/heartbeat; then
+            if output=$(kubectl -n rahbar exec deploy/ui -- wget -T 3 -O- http://chroma:8000/api/v2/heartbeat 2>&1); then
               echo 'UI unexpectedly reached Chroma'
               exit 1
             fi
-            kubectl -n rahbar exec deploy/ui -- nslookup chroma
+            printf '%s\n' "$output"
+            grep -q 'Connecting to chroma:8000' <<< "$output"
+            grep -q 'timed out' <<< "$output"
             kubectl -n rahbar exec deploy/api -- python -c 'import urllib.request; print(urllib.request.urlopen("http://chroma:8000/api/v2/heartbeat", timeout=3).read().decode())'
           } 2>&1 | tee "$PROOF/real-network-policy.txt"
       - name: Verify cited and declined answers through Ingress
+        if: ${{ !cancelled() && steps.index.outcome == 'success' }}
         run: |
           docker exec rahbar-demo-ollama ollama list
           if ! docker exec rahbar-demo-ollama ollama list | grep -q 'llama3.2:3b'; then
