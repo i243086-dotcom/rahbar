@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 40
     env:
       PROFILE: rahbar-demo
-      PROOF: ${{ runner.temp }}/rahbar-evidence
+      PROOF: ${{ github.workspace }}/.demo-evidence
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
