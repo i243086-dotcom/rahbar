@@ -1,0 +1,109 @@
+name: Hosted real-corpus demo
+on:
+  push:
+    branches: [codex/hosted-real-corpus-demo]
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      PROFILE: rahbar-demo
+      PROOF: ${{ runner.temp }}/rahbar-evidence
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify the public corpus
+        run: |
+          mkdir -p "$PROOF"
+          pip install httpx==0.28.1 PyYAML==6.0.2
+          python corpus/fetch.py
+          git restore -- corpus/MANIFEST.md
+          python corpus/fetch.py --verify | tee "$PROOF/corpus-verification.txt"
+          grep -q '9 of 9 match' "$PROOF/corpus-verification.txt"
+      - name: Start Minikube with Calico
+        run: |
+          version=v1.37.0
+          url="https://github.com/kubernetes/minikube/releases/download/$version/minikube-linux-amd64"
+          curl -fsSL --retry 3 "$url" -o /tmp/minikube-linux-amd64
+          checksum=$(curl -fsSL --retry 3 "$url.sha256" | awk '{print $1}')
+          echo "$checksum  /tmp/minikube-linux-amd64" | sha256sum -c -
+          sudo install /tmp/minikube-linux-amd64 /usr/local/bin/minikube
+          make cluster PROFILE="$PROFILE" MEMORY=6500
+          kubectl get nodes -o wide | tee "$PROOF/nodes.txt"
+          kubectl get pods -A | tee "$PROOF/cluster-pods.txt"
+          kubectl -n ingress-nginx rollout status deployment/ingress-nginx-controller --timeout=300s
+      - name: Build and load the app
+        run: make images PROFILE="$PROFILE" TAG=dev
+      - name: Start Ollama and pull pinned model names
+        run: |
+          network=$(docker inspect -f '{{range $name, $config := .NetworkSettings.Networks}}{{$name}}{{end}}' "$PROFILE")
+          docker run -d --name rahbar-demo-ollama --network "$network" \
+            ollama/ollama@sha256:a5409cb903d30f9cd67e9f430dd336ddc9274e16fd78f75b675c42065991b4fd
+          docker exec rahbar-demo-ollama ollama pull nomic-embed-text
+          echo "OLLAMA_HOST_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' rahbar-demo-ollama)" >> "$GITHUB_ENV"
+      - name: Index the corpus and capture pod usage
+        run: |
+          docker exec rahbar-demo-ollama ollama pull llama3.2:3b > "$PROOF/ollama-pull.txt" 2>&1 &
+          model_pull=$!
+          (
+            while true; do
+              if rows=$(kubectl -n rahbar top pods --containers 2>/dev/null); then
+                printf '\n%s\n%s\n' "$(date -u +%FT%TZ)" "$rows"
+              fi
+              sleep 5
+            done
+          ) > "$PROOF/real-indexer-resources.txt" &
+          sampler=$!
+          trap 'kill "$sampler" 2>/dev/null || true' EXIT
+          bash scripts/deploy.sh k8s/overlays/dev corpus/raw | tee "$PROOF/real-deploy.txt"
+          grep -Eq 'indexer[[:space:]]+[0-9]+m[[:space:]]+[0-9]+Mi' "$PROOF/real-indexer-resources.txt"
+          kubectl -n rahbar get hpa,endpoints,ingress > "$PROOF/real-cluster-status.txt"
+          wait "$model_pull" || true
+      - name: Verify NetworkPolicy enforcement
+        run: |
+          {
+            kubectl get pods -A | grep calico
+            kubectl -n rahbar get networkpolicy
+            if kubectl -n rahbar exec deploy/ui -- wget -T 3 -O- http://chroma:8000/api/v2/heartbeat; then
+              echo 'UI unexpectedly reached Chroma'
+              exit 1
+            fi
+            kubectl -n rahbar exec deploy/ui -- nslookup chroma
+            kubectl -n rahbar exec deploy/api -- python -c 'import urllib.request; print(urllib.request.urlopen("http://chroma:8000/api/v2/heartbeat", timeout=3).read().decode())'
+          } 2>&1 | tee "$PROOF/real-network-policy.txt"
+      - name: Verify cited and declined answers through Ingress
+        run: |
+          docker exec rahbar-demo-ollama ollama list
+          if ! docker exec rahbar-demo-ollama ollama list | grep -q 'llama3.2:3b'; then
+            docker exec rahbar-demo-ollama ollama pull llama3.2:3b
+          fi
+          kubectl -n ingress-nginx port-forward svc/ingress-nginx-controller 8080:80 > "$PROOF/ingress-forward.txt" 2>&1 &
+          forward=$!
+          trap 'kill "$forward" 2>/dev/null || true' EXIT
+          curl -fsS --retry 12 --retry-all-errors --retry-delay 2 -H 'Host: rahbar.local' http://127.0.0.1:8080/ -o /dev/null
+          ask() {
+            local question=$1 file=$2
+            curl -fsS --max-time 310 -H 'Host: rahbar.local' -H 'Content-Type: application/json' \
+              --data "$(jq -nc --arg question "$question" '{question:$question}')" \
+              http://127.0.0.1:8080/api/ask | jq . > "$PROOF/$file"
+          }
+          ask 'What CGPA puts a student on academic warning?' real-ingress-cited.json
+          ask 'What are the hostel rules for visitors and curfew?' real-ingress-abstention.json
+          jq -e '.answered_from_context and (.citations | length > 0)' "$PROOF/real-ingress-cited.json"
+          jq -e '.answered_from_context == false' "$PROOF/real-ingress-abstention.json"
+      - name: Upload demo evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: real-corpus-minikube-evidence
+          path: |
+            ${{ env.PROOF }}/*.txt
+            ${{ env.PROOF }}/*.json
+          retention-days: 14
