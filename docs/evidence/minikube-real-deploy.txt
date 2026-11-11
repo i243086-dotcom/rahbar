@@ -1,0 +1,76 @@
+namespace/rahbar created
+serviceaccount/api created
+serviceaccount/ui created
+serviceaccount/chroma created
+serviceaccount/redis created
+serviceaccount/indexer created
+persistentvolumeclaim/corpus created
+pod/corpus-loader created
+pod/corpus-loader condition met
+pod "corpus-loader" deleted from rahbar namespace
+namespace/rahbar unchanged
+serviceaccount/api unchanged
+serviceaccount/chroma unchanged
+serviceaccount/indexer unchanged
+serviceaccount/redis unchanged
+serviceaccount/ui unchanged
+configmap/rahbar-config created
+service/api created
+service/chroma created
+service/redis created
+service/ui created
+persistentvolumeclaim/corpus unchanged
+persistentvolumeclaim/redis-data created
+deployment.apps/api created
+deployment.apps/redis created
+deployment.apps/ui created
+statefulset.apps/chroma created
+cronjob.batch/reindex created
+horizontalpodautoscaler.autoscaling/api created
+ingress.networking.k8s.io/rahbar created
+networkpolicy.networking.k8s.io/api created
+networkpolicy.networking.k8s.io/chroma created
+networkpolicy.networking.k8s.io/default-deny created
+networkpolicy.networking.k8s.io/dns created
+networkpolicy.networking.k8s.io/indexer created
+networkpolicy.networking.k8s.io/ollama-host created
+networkpolicy.networking.k8s.io/redis created
+networkpolicy.networking.k8s.io/ui created
+Waiting for 1 pods to be ready...
+partitioned roll out complete: 1 new pods have been updated...
+deployment "redis" successfully rolled out
+job.batch/indexer-1794326365355975194 created
+job.batch/indexer-1794326365355975194 condition met
+{"ts": "2026-11-10T16:00:20Z", "logger": "rahbar.indexer", "msg": "indexer starting", "dummy": false, "embed_model": "nomic-embed-text", "collection": "rahbar", "chroma": "chroma:8000", "pod": "indexer-1794326365355975194-kk7gx"}
+{"ts": "2026-11-10T16:02:24Z", "logger": "rahbar.indexer.extract", "msg": "extracted", "source": "undergraduate-academic-rules-aug-2023.pdf", "pages": 26, "ocr_pages": 24, "empty_pages": 1}
+{"ts": "2026-11-10T16:02:24Z", "logger": "rahbar.indexer", "msg": "chunked", "source": "undergraduate-academic-rules-aug-2023.pdf", "chunks": 81, "doc_version": "2023-08", "superseded": true}
+{"ts": "2026-11-10T16:02:39Z", "logger": "rahbar.indexer.extract", "msg": "extracted", "source": "academic-rules-handbook-jun-2026.pdf", "pages": 58, "ocr_pages": 5, "empty_pages": 3}
+{"ts": "2026-11-10T16:02:39Z", "logger": "rahbar.indexer", "msg": "chunked", "source": "academic-rules-handbook-jun-2026.pdf", "chunks": 183, "doc_version": "2026-06", "superseded": false}
+{"ts": "2026-11-10T16:02:41Z", "logger": "rahbar.indexer.extract", "msg": "extracted", "source": "prospectus-2026-academic-rules-and-regulations.pdf", "pages": 5, "ocr_pages": 0, "empty_pages": 0}
+{"ts": "2026-11-10T16:02:41Z", "logger": "rahbar.indexer", "msg": "chunked", "source": "prospectus-2026-academic-rules-and-regulations.pdf", "chunks": 10, "doc_version": "2026", "superseded": false}
+{"ts": "2026-11-10T16:02:55Z", "logger": "rahbar.indexer.extract", "msg": "extracted", "source": "student-handbook-jun-2026.pdf", "pages": 64, "ocr_pages": 4, "empty_pages": 2}
+{"ts": "2026-11-10T16:02:55Z", "logger": "rahbar.indexer", "msg": "chunked", "source": "student-handbook-jun-2026.pdf", "chunks": 159, "doc_version": "2026-06", "superseded": false}
+{"ts": "2026-11-10T16:03:00Z", "logger": "rahbar.indexer.extract", "msg": "extracted", "source": "annual-report-2019-20.pdf", "pages": 33, "ocr_pages": 0, "empty_pages": 0}
+{"ts": "2026-11-10T16:03:00Z", "logger": "rahbar.indexer", "msg": "chunked", "source": "annual-report-2019-20.pdf", "chunks": 43, "doc_version": "2019-20", "superseded": false}
+{"ts": "2026-11-10T16:03:13Z", "logger": "rahbar.indexer.extract", "msg": "extracted", "source": "annual-report-2023-24.pdf", "pages": 85, "ocr_pages": 0, "empty_pages": 0}
+{"ts": "2026-11-10T16:03:13Z", "logger": "rahbar.indexer", "msg": "chunked", "source": "annual-report-2023-24.pdf", "chunks": 160, "doc_version": "2023-24", "superseded": false}
+{"ts": "2026-11-10T16:03:13Z", "logger": "rahbar.indexer", "msg": "chunked", "source": "fee-structure-page.html", "chunks": 10, "doc_version": "2026-27", "superseded": false}
+{"ts": "2026-11-10T16:03:13Z", "logger": "rahbar.indexer", "msg": "chunked", "source": "grading-page.html", "chunks": 7, "doc_version": "2026", "superseded": false}
+{"ts": "2026-11-10T16:03:45Z", "logger": "rahbar.indexer.extract", "msg": "extracted", "source": "faculty-entrepreneurship-and-technical-start-ups-policy.pdf", "pages": 8, "ocr_pages": 8, "empty_pages": 0}
+{"ts": "2026-11-10T16:03:45Z", "logger": "rahbar.indexer", "msg": "chunked", "source": "faculty-entrepreneurship-and-technical-start-ups-policy.pdf", "chunks": 12, "doc_version": "2022-05", "superseded": false}
+{"ts": "2026-11-10T16:03:45Z", "logger": "rahbar.indexer", "msg": "chunking summary", "documents": 9, "skipped": [], "ocr_pages": 41, "chunks": 665, "original_words": 86640, "stored_words": 91778, "storage_amplification": 1.059}
+{"ts": "2026-11-10T16:12:32Z", "logger": "rahbar.indexer", "msg": "embedded", "vectors": 665, "dimension": 768, "model": "nomic-embed-text"}
+{"ts": "2026-11-10T16:12:34Z", "logger": "rahbar.indexer", "msg": "cache invalidated", "keys_removed": 0}
+{"ts": "2026-11-10T16:12:34Z", "logger": "rahbar.indexer", "msg": "indexer finished", "chunks": 665, "seconds": 734.0}
+deployment.apps/api restarted
+Waiting for deployment "api" rollout to finish: 1 out of 3 new replicas have been updated...
+Waiting for deployment "api" rollout to finish: 1 out of 3 new replicas have been updated...
+Waiting for deployment "api" rollout to finish: 1 out of 3 new replicas have been updated...
+Waiting for deployment "api" rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for deployment "api" rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for deployment "api" rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for deployment "api" rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for deployment "api" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "api" rollout to finish: 1 old replicas are pending termination...
+deployment "api" successfully rolled out
+deployment "ui" successfully rolled out
