@@ -14,3 +14,7 @@ Run [42481702942](https://github.com/i243086-dotcom/rahbar/actions/runs/42481702
 
 - [Rollout and rollback](hosted-rollout-and-rollback.txt) records a new API image with debug logging, successful answers after both rollouts and restoration of the previous image.
 - [Fixture HPA and resources](hosted-fixture-hpa-and-resources.txt) records actual CPU utilization at 2% against a 70% target, three replicas and per-container resource readings. These readings describe fixture traffic. The real-corpus OCR peak remains a separate measurement.
+
+## GitHub merge protection screenshot
+
+[Supplied screenshot](github-review-block.png) shows GitHub blocking a merge pending one approving review from someone with write access. At capture time GitHub showed 15 successful checks and an evaluation check in progress. This screenshot documents the approval requirement. It does not establish that a failed evaluation check blocks merging.

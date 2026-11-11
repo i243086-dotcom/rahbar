@@ -1,0 +1,63 @@
+{
+  "request_id": "25944a6cfada4f0c381229b67c7c8075",
+  "answer": "A student is put on academic warning if their CGPA is less than 2.00 for undergraduate programs, and less than 2.5 for MBA/MS programs, and less than 3.0 for PhD programs.",
+  "citations": [
+    {
+      "source": "academic-rules-handbook-jun-2026.pdf",
+      "section": "5.4 Minimum CGPA required to avoid academic warning is 2.00",
+      "page": 24
+    },
+    {
+      "source": "academic-rules-handbook-jun-2026.pdf",
+      "section": "5.5 If at the end of a semester (including summer semester) CGPA",
+      "page": 24
+    },
+    {
+      "source": "academic-rules-handbook-jun-2026.pdf",
+      "section": "5.3 Any deviation from Rule 5.2 above if necessitated by the",
+      "page": 25
+    }
+  ],
+  "answered_from_context": true,
+  "confidence": "high",
+  "retrieved": [
+    {
+      "chunk_id": "academic-rules-handbook-jun-2026-0108",
+      "source": "academic-rules-handbook-jun-2026.pdf",
+      "section": "5.5 If at the end of a semester (including summer semester) CGPA",
+      "page": 24,
+      "score": 0.8276
+    },
+    {
+      "chunk_id": "academic-rules-handbook-jun-2026-0107",
+      "source": "academic-rules-handbook-jun-2026.pdf",
+      "section": "5.4 Minimum CGPA required to avoid academic warning is 2.00",
+      "page": 24,
+      "score": 0.8262
+    },
+    {
+      "chunk_id": "grading-page-0004",
+      "source": "grading-page.html",
+      "section": "Warning/Probation",
+      "page": 1,
+      "score": 0.8185
+    },
+    {
+      "chunk_id": "academic-rules-handbook-jun-2026-0110",
+      "source": "academic-rules-handbook-jun-2026.pdf",
+      "section": "5.3 Any deviation from Rule 5.2 above if necessitated by the",
+      "page": 25,
+      "score": 0.7925
+    },
+    {
+      "chunk_id": "prospectus-2026-academic-rules-and-regulations-0001",
+      "source": "prospectus-2026-academic-rules-and-regulations.pdf",
+      "section": "(front matter)",
+      "page": 2,
+      "score": 0.7596
+    }
+  ],
+  "provider": "ollama",
+  "cached": false,
+  "citations_dropped": 0
+}

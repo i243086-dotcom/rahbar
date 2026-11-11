@@ -13,3 +13,5 @@ on our own machine. We can explain every module above line by line.
 
 ## Student B (platform and DevOps)
 OpenAI Codex adapted the Docker images, Kubernetes overlays, workflow and deployment scripts to the shared contract. It also drafted platform documentation and ran local verification. Student B should append the changes and verification they personally performed, with their reasons.
+
+Codex ran the real-corpus Minikube demo on a separate GitHub Actions branch after the local Kubernetes downloads stalled. It fixed the evidence capture, verified the run artifacts, and used the observed pod samples for Engineering Note 4. [Hosted run and evidence](evidence/minikube-real-corpus.md)
