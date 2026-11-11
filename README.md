@@ -87,3 +87,13 @@ The repository owner sets the `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` GitHub 
 Hosted generation is optional. Use `make secret` to create the hosted key from the `LLM_API_KEY` environment variable and allow the selected provider in API egress policy. The checked-in placeholder is excluded from the overlay.
 
 Follow the [Student B evidence checklist](docs/PLATFORM-DEMO.md) before submission.
+
+s
+## Submission links
+
+- Successful `cd.yml` run (test, build-push, deploy): https://github.com/i243086-dotcom/rahbar/actions/runs/43021967290
+- Docker Hub images, tagged with the full commit SHA:
+  - https://hub.docker.com/repository/docker/syedayaanhaider123/rahbar-indexer/tags
+  - https://hub.docker.com/repository/docker/syedayaanhaider123/rahbar-ui/tags
+  - https://hub.docker.com/repository/docker/syedayaanhaider123/rahbar-api/tags
+- Evaluation results: [`eval/results.json`](eval/results.json) and [`eval/baseline.json`](eval/baseline.json)
